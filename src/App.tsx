@@ -1,35 +1,70 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import "./style/App.scss";
+import Task from "./components/Task";
+import CreateTask from "./components/CreateTask";
+import { deleteTasks, getTasks, updateTask } from "./api/baseAPI";
+import { TaskCategorys, TaskProps } from "./constants/interfaces";
+import TaskCounter from "./components/TaskCounter";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [taskList, setTaskList] = useState<TaskProps[]>([]);
+  const [taskListChanged, setTaskListChanged] = useState<boolean>(false);
+  const [taskCategory, setTaskCategory] = useState<TaskCategorys>("Все");
+
+  useEffect(() => {
+    getTasks().then((data) => {
+      const allTtasks = data.data.reverse();
+      if (taskCategory === "Все") {
+        setTaskList(allTtasks);
+      } else if (taskCategory === "В работе") {
+        setTaskList(allTtasks.filter((tasks) => tasks.isDone === false));
+      } else if (taskCategory === "Завершенные") {
+        setTaskList(allTtasks.filter((tasks) => tasks.isDone === true));
+      }
+    });
+  }, [taskListChanged, taskCategory]);
+
+  const triggerChenged = () => {
+    setTaskListChanged((prev) => !prev);
+  };
+
+  function addTask(newTask: TaskProps) {
+    setTaskList((prev) => [newTask, ...prev!]);
+    triggerChenged();
+  }
+
+  function deleteTask(id: number) {
+    deleteTasks(id!).then(() => triggerChenged());
+  }
+
+  function onUpdateTask(id: number, updatedData: TaskProps) {
+    updateTask(id, updatedData).then(() => triggerChenged());
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className="app">
+        <CreateTask onAddTask={addTask} />
+        <TaskCounter
+          setTaskCategory={setTaskCategory}
+          taskListChanged={taskListChanged}
+        />
+        {taskList?.map((i) => {
+          return (
+            <Task
+              key={i.id}
+              created={i.created}
+              id={i.id}
+              isDone={i.isDone}
+              title={i.title}
+              deleteTask={deleteTask}
+              updateTask={onUpdateTask}
+            />
+          );
+        })}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
