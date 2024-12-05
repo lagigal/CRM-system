@@ -1,45 +1,49 @@
 import "../style/Task.scss";
 import { TaskProps } from "../constants/interfaces";
-import React, { useEffect, useState } from "react";
+import React, { ChangeEvent, useState } from "react";
 import trash from "../assets/trash.svg";
+import { deleteTasks, updateTask } from "../api/baseAPI";
 
-const Task: React.FC<TaskProps> = ({
-  title,
-  isDone,
-  id,
-  deleteTask,
-  updateTask,
-}) => {
-  const [isDoneTask, setIsDone] = useState<boolean>(isDone);
-  const [titleTask, setTitleTask] = useState<string>(title);
+const Task: React.FC<TaskProps> = ({ todo, updateTaskList }) => {
+  const [isDoneTask, setIsDone] = useState<boolean>(todo.isDone);
+  const [titleTask, setTitleTask] = useState<string>(todo.title);
   const [isEditingTask, setIsEditingTask] = useState<boolean>(false);
-  const [newTitleTask, setNewTitleTask] = useState<string>(title);
-
-  const toggleDone = () => {
-    setIsDone((prev) => !prev);
-  };
-
-  const onDeleteTask = () => {
-    if (deleteTask) {
-      deleteTask(id!);
-    }
-  };
+  const [newTitleTask, setNewTitleTask] = useState<string>(todo.title);
 
   const chengeTask = () => {
     const updetedTask = {
       title: newTitleTask,
       isDone: isDoneTask,
     };
-    if (updateTask) {
-      updateTask(id!, updetedTask);
-      setIsEditingTask(false);
-      setTitleTask(newTitleTask);
-    }
+    updateTask(todo.id, updetedTask).then(() => updateTaskList());
+    setIsEditingTask(false);
+    setTitleTask(newTitleTask);
   };
 
-  useEffect(() => {
-    chengeTask();
-  }, [isDoneTask]);
+  const toggleDone = () => {
+    const updateIsDone = !isDoneTask;
+    updateTask(todo.id, { isDone: updateIsDone }).then(() => {
+      updateTaskList();
+      setIsDone(updateIsDone);
+    });
+  };
+
+  const onDeleteTask = () => {
+    deleteTasks(todo.id).then(() => updateTaskList());
+  };
+
+  const handleChengeTitleTask = (e: ChangeEvent<HTMLInputElement>) => {
+    setNewTitleTask(e.target.value);
+  };
+
+  const handleCloseChengeTitleTask = () => {
+    setIsEditingTask(false);
+    setNewTitleTask(titleTask);
+  };
+
+  const handleOpenChengeTitleTask = () => {
+    setIsEditingTask(true);
+  };
 
   return (
     <div className="task">
@@ -47,7 +51,7 @@ const Task: React.FC<TaskProps> = ({
         className="task__checkbox"
         type="checkbox"
         onChange={toggleDone}
-        checked={isDoneTask}
+        checked={todo.isDone}
       />
 
       {isEditingTask && (
@@ -57,19 +61,14 @@ const Task: React.FC<TaskProps> = ({
             autoFocus
             className="task__input"
             value={newTitleTask}
-            onChange={(e) => {
-              setNewTitleTask(e.target.value);
-            }}
+            onChange={handleChengeTitleTask}
           />
           <button className="task__button save" onClick={chengeTask}>
             &#10004;
           </button>
           <button
             className="task__button close"
-            onClick={() => {
-              setIsEditingTask(false);
-              setNewTitleTask(titleTask);
-            }}
+            onClick={handleCloseChengeTitleTask}
           >
             &#10006;
           </button>
@@ -80,7 +79,7 @@ const Task: React.FC<TaskProps> = ({
           <p className="task__title">{titleTask}</p>
           <button
             className="task__button chenge"
-            onClick={() => setIsEditingTask(true)}
+            onClick={handleOpenChengeTitleTask}
           >
             &#9998;
           </button>

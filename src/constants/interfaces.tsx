@@ -1,13 +1,32 @@
-export interface TaskProps {
-  created?: string;
-  id?: number;
-  isDone: boolean;
-  title: string;
-  deleteTask?: (id: number) => void;
-  updateTask?: (id: number, updatedData: TaskProps) => void;
+export interface TaskProps extends updateTaskListProps {
+  todo: Todo;
 }
 
-export interface InfoProps {
+export interface TaskListProps extends updateTaskListProps {
+  todos: Todo[];
+  deleteTask?: (id: number) => void;
+  updateTask?: (id: number, updatedData: TodoRequest) => void;
+}
+
+export interface TaskCounterProps {
+  taskCounter: TodoInfo;
+  setTaskCategory: (a: TaskStatus) => void;
+  taskStatus: TaskStatus;
+}
+
+export interface TodoRequest {
+  title?: string;
+  isDone?: boolean;
+}
+
+export interface Todo {
+  id: number;
+  title: string;
+  created: string;
+  isDone: boolean;
+}
+
+export interface TodoInfo {
   all: number;
   completed: number;
   inWork: number;
@@ -17,13 +36,14 @@ export interface MetaProps {
   totalAmount: number;
 }
 
-export interface CreateTaskProps {
-  onAddTask: (newTask: TaskProps) => void;
+export interface updateTaskListProps {
+  updateTaskList: () => void;
 }
 
-export interface TaskCounterProps {
-  taskListChanged: boolean;
-  setTaskCategory: (a: TaskCategorys) => void;
+export interface dataTasks {
+  data: Todo[];
+  info: TodoInfo;
+  meta: MetaProps;
 }
 
-export type TaskCategorys = "Все" | "В работе" | "Завершенные";
+export type TaskStatus = "all" | "completed" | "inWork";

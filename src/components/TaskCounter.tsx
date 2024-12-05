@@ -1,40 +1,38 @@
-import React, { useEffect, useState } from "react";
-import { InfoProps, TaskCounterProps } from "../constants/interfaces";
-import { getTasks } from "../api/baseAPI";
+import React from "react";
+import { TaskCounterProps } from "../constants/interfaces";
 import "../style/TaskCounter.scss";
 
 const TaskCounter: React.FC<TaskCounterProps> = ({
-  taskListChanged,
   setTaskCategory,
+  taskCounter,
+  taskStatus,
 }) => {
-  const [taskCount, setTaskCount] = useState<InfoProps>();
-
-  useEffect(() => {
-    getTasks().then((data) => {
-      setTaskCount(data.info);
-    });
-  }, [taskListChanged]);
-
   return (
     <>
       <div className="taskCounter">
         <button
-          className="taskCounter__button"
-          onClick={() => setTaskCategory("Все")}
+          className={`taskCounter__button ${
+            taskStatus === "all" ? "active" : ""
+          }`}
+          onClick={() => setTaskCategory("all")}
         >
-          Все ({`${taskCount?.all}`})
+          Все ({`${taskCounter?.all}`})
         </button>
         <button
-          className="taskCounter__button"
-          onClick={() => setTaskCategory("Завершенные")}
+          className={`taskCounter__button ${
+            taskStatus === "completed" ? "active" : ""
+          }`}
+          onClick={() => setTaskCategory("completed")}
         >
-          Завершенные ({`${taskCount?.completed}`})
+          Завершенные ({`${taskCounter?.completed}`})
         </button>
         <button
-          className="taskCounter__button"
-          onClick={() => setTaskCategory("В работе")}
+          className={`taskCounter__button ${
+            taskStatus === "inWork" ? "active" : ""
+          }`}
+          onClick={() => setTaskCategory("inWork")}
         >
-          В работе ({`${taskCount?.inWork}`})
+          В работе ({`${taskCounter?.inWork}`})
         </button>
       </div>
     </>

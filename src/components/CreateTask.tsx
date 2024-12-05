@@ -1,12 +1,11 @@
 import "../style/CreateTask.scss";
-import { createTasks, getTask } from "../api/baseAPI";
+import { createTasks } from "../api/baseAPI";
 
-import React, { useRef, useState } from "react";
-import { CreateTaskProps, TaskProps } from "../constants/interfaces";
+import React, { ChangeEvent, useState } from "react";
+import { updateTaskListProps, TodoRequest } from "../constants/interfaces";
 
-const CreateTask: React.FC<CreateTaskProps> = ({ onAddTask }) => {
+const CreateTask: React.FC<updateTaskListProps> = ({ updateTaskList }) => {
   const [taskText, setTaskText] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
 
   const validateInput = (text: string) => {
@@ -22,13 +21,21 @@ const CreateTask: React.FC<CreateTaskProps> = ({ onAddTask }) => {
   };
 
   const saveTask = () => {
-    const task: TaskProps = { title: taskText, isDone: false };
-    if (!error && inputRef.current?.value.length) {
-      createTasks(task).then((data) => {
-        getTask(data.id!).then((data) => onAddTask(data));
-        inputRef.current!.value = "";
+    const task: TodoRequest = { title: taskText, isDone: false };
+    if (!error && taskText) {
+      createTasks(task).then(() => {
+        updateTaskList();
+        setTaskText("");
         setError(null);
       });
+    }
+  };
+
+  const hendleChangeCreateTaskInput = (e: ChangeEvent<HTMLInputElement>) => {
+    setTaskText(e.target.value);
+    validateInput(e.target.value);
+    if (!e.target.value.length) {
+      setError(null);
     }
   };
 
@@ -37,16 +44,10 @@ const CreateTask: React.FC<CreateTaskProps> = ({ onAddTask }) => {
       <div className="createTask">
         <input
           maxLength={65}
-          ref={inputRef}
           className="createTask__input"
           placeholder="Добавьте задачу..."
-          onChange={(e) => {
-            setTaskText(e.target.value);
-            validateInput(e.target.value);
-            if (!e.target.value.length) {
-              setError(null);
-            }
-          }}
+          value={taskText}
+          onChange={hendleChangeCreateTaskInput}
         />
         {error && <div className="createTask__error-message">{error}</div>}
         <button className="createTask__button" onClick={saveTask}>

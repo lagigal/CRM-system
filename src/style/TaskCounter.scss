@@ -16,5 +16,9 @@
       cursor: pointer;
       background-color: #d2d2d286;
     }
+
+    &.active {
+      background-color: #aab3da;
+    }
   }
 }

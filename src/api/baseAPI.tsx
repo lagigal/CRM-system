@@ -1,22 +1,21 @@
-import { TaskProps, InfoProps, MetaProps } from "../constants/interfaces";
+import {
+  TaskStatus,
+  Todo,
+  TodoRequest,
+  dataTasks,
+} from "../constants/interfaces";
 
 const url = "https://easydev.club/api/v1";
 
-interface dataTasks {
-  data: [TaskProps];
-  info: InfoProps;
-  meta: MetaProps;
-}
-
-export async function getTasks(): Promise<dataTasks> {
-  const res = await fetch(`${url}/todos`, {
+export async function getTasks(status: TaskStatus): Promise<dataTasks> {
+  const res = await fetch(`${url}/todos?filter=${status}`, {
     method: "GET",
   });
   const data = res.json();
   return data;
 }
 
-export async function createTasks(task: TaskProps): Promise<TaskProps> {
+export async function createTasks(task: TodoRequest): Promise<Todo> {
   const res = await fetch(`${url}/todos`, {
     method: "POST",
     headers: {
@@ -34,7 +33,7 @@ export async function deleteTasks(id: number) {
   });
 }
 
-export async function getTask(id: number): Promise<TaskProps> {
+export async function getTask(id: number): Promise<Todo> {
   const res = await fetch(`${url}/todos/${id}`, {
     method: "GET",
   });
@@ -44,8 +43,8 @@ export async function getTask(id: number): Promise<TaskProps> {
 
 export async function updateTask(
   id: number,
-  updatedData: TaskProps
-): Promise<TaskProps> {
+  updatedData: TodoRequest
+): Promise<Todo> {
   const res = await fetch(`${url}/todos/${id}`, {
     method: "PUT",
     headers: {
