@@ -4,8 +4,6 @@ export interface TaskProps extends updateTaskListProps {
 
 export interface TaskListProps extends updateTaskListProps {
   todos: Todo[];
-  deleteTask?: (id: number) => void;
-  updateTask?: (id: number, updatedData: TodoRequest) => void;
 }
 
 export interface TaskCounterProps {
