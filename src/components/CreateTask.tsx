@@ -9,7 +9,7 @@ const CreateTask: React.FC<updateTaskListProps> = ({ updateTaskList }) => {
   const [error, setError] = useState<string | null>(null);
 
   const validateInput = (text: string) => {
-    if (text.length < 2) {
+    if (text.trim().length < 2) {
       setError("Минимальная длина задачи: 2 символа.");
       return false;
     } else if (text.length > 64) {
