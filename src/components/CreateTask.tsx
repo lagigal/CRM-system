@@ -3,6 +3,7 @@ import { createTasks } from "../api/baseAPI";
 
 import React, { ChangeEvent, useState } from "react";
 import { updateTaskListProps, TodoRequest } from "../constants/interfaces";
+import { Button, Input } from "antd";
 
 const CreateTask: React.FC<updateTaskListProps> = ({ updateTaskList }) => {
   const [taskText, setTaskText] = useState("");
@@ -45,17 +46,9 @@ const CreateTask: React.FC<updateTaskListProps> = ({ updateTaskList }) => {
   return (
     <>
       <div className="createTask">
-        <input
-          maxLength={65}
-          className="createTask__input"
-          placeholder="Добавьте задачу..."
-          value={taskText}
-          onChange={hendleChangeCreateTaskInput}
-        />
+        <Input maxLength={65} placeholder="Добавьте задачу..." value={taskText} onChange={hendleChangeCreateTaskInput}/>
         {error && <div className="createTask__error-message">{error}</div>}
-        <button className="createTask__button" onClick={saveTask}>
-          Добавить
-        </button>
+        <Button onClick={saveTask}>Добавить</Button>
       </div>
     </>
   );

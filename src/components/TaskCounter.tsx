@@ -1,6 +1,7 @@
 import React from "react";
 import { TaskCounterProps } from "../constants/interfaces";
 import "../style/TaskCounter.scss";
+import { Button } from "antd";
 
 const TaskCounter: React.FC<TaskCounterProps> = ({
   setTaskCategory,
@@ -10,30 +11,30 @@ const TaskCounter: React.FC<TaskCounterProps> = ({
   return (
     <>
       <div className="taskCounter">
-        <button
+        <Button
           className={`taskCounter__button ${
             taskStatus === "all" ? "active" : ""
           }`}
           onClick={() => setTaskCategory("all")}
         >
           Все ({`${taskCounter?.all}`})
-        </button>
-        <button
+        </Button>
+        <Button
           className={`taskCounter__button ${
             taskStatus === "completed" ? "active" : ""
           }`}
           onClick={() => setTaskCategory("completed")}
         >
           Завершенные ({`${taskCounter?.completed}`})
-        </button>
-        <button
+        </Button>
+        <Button
           className={`taskCounter__button ${
             taskStatus === "inWork" ? "active" : ""
           }`}
           onClick={() => setTaskCategory("inWork")}
         >
           В работе ({`${taskCounter?.inWork}`})
-        </button>
+        </Button>
       </div>
     </>
   );

@@ -1,45 +1,14 @@
-import { useEffect, useState } from "react";
-import "./style/App.scss";
-import CreateTask from "./components/CreateTask";
-import { getTasks } from "./api/baseAPI";
-import { TaskStatus, Todo, TodoInfo } from "./constants/interfaces";
-import TaskCounter from "./components/TaskCounter";
-import TaskList from "./components/TaskList";
+import { Route, Routes } from "react-router-dom";
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
 
 function App() {
-  const [taskList, setTaskList] = useState<Todo[]>([]);
-  const [taskCount, setTaskCount] = useState<TodoInfo>({
-    all: 0,
-    completed: 0,
-    inWork: 0,
-  });
-  const [taskCategory, setTaskCategory] = useState<TaskStatus>("all");
-
-  useEffect(() => {
-    getAllTasks();
-  }, [taskCategory]);
-
-  async function getAllTasks() {
-    try {
-      const data = await getTasks(taskCategory);
-        setTaskList(data.data);
-        setTaskCount(data.info);
-    } catch (error) {
-      console.error("Failed to fetch tasks:", error);
-    }
-  }
-
   return (
     <>
-      <div className="app">
-        <CreateTask updateTaskList={getAllTasks} />
-        <TaskCounter
-          taskStatus={taskCategory}
-          taskCounter={taskCount}
-          setTaskCategory={setTaskCategory}
-        />
-        <TaskList todos={taskList} updateTaskList={getAllTasks} />
-      </div>
+      <Routes>
+        <Route path="/" element={<Home/>}/>
+        <Route path="/profile" element={<Profile/>}/>
+      </Routes>
     </>
   );
 }

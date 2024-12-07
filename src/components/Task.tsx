@@ -3,6 +3,7 @@ import { TaskProps } from "../constants/interfaces";
 import React, { ChangeEvent, useState } from "react";
 import trash from "../assets/trash.svg";
 import { deleteTasks, updateTask } from "../api/baseAPI";
+import { Button, Input } from "antd";
 
 const Task: React.FC<TaskProps> = ({ todo, updateTaskList }) => {
   const [isDoneTask, setIsDone] = useState<boolean>(todo.isDone);
@@ -75,7 +76,7 @@ const Task: React.FC<TaskProps> = ({ todo, updateTaskList }) => {
 
   return (
     <div className="task">
-      <input
+      <Input
         className="task__checkbox"
         type="checkbox"
         onChange={toggleDone}
@@ -84,40 +85,40 @@ const Task: React.FC<TaskProps> = ({ todo, updateTaskList }) => {
       {error && <div className="task__error-message">{error}</div>}
       {isEditingTask && (
         <>
-          <input
+          <Input
             maxLength={64}
             autoFocus
             className="task__input"
             value={newTitleTask}
             onChange={handleChengeTitleTask}
           />
-          <button
+          <Button
             className="task__button save"
             onClick={chengeTask}
             disabled={error ? true : false}
           >
             &#10004;
-          </button>
-          <button
+          </Button>
+          <Button
             className="task__button close"
             onClick={handleCloseChengeTitleTask}
           >
             &#10006;
-          </button>
+          </Button>
         </>
       )}
       {!isEditingTask && (
         <>
           <p className="task__title">{titleTask}</p>
-          <button
+          <Button
             className="task__button chenge"
             onClick={handleOpenChengeTitleTask}
           >
             &#9998;
-          </button>
-          <button className="task__button trash" onClick={onDeleteTask}>
+          </Button>
+          <Button className="task__button trash" onClick={onDeleteTask}>
             <img src={trash} />
-          </button>
+          </Button>
         </>
       )}
     </div>
