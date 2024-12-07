@@ -20,10 +20,13 @@ function App() {
   }, [taskCategory]);
 
   async function getAllTasks() {
-    await getTasks(taskCategory).then((data) => {
-      setTaskList(data.data);
-      setTaskCount(data.info);
-    });
+    try {
+      const data = await getTasks(taskCategory);
+        setTaskList(data.data);
+        setTaskCount(data.info);
+    } catch (error) {
+      console.error("Failed to fetch tasks:", error);
+    }
   }
 
   return (

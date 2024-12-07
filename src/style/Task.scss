@@ -6,9 +6,10 @@
   border-radius: 5px;
   border: 1px solid #b6b6b65c;
   background-color: rgb(224, 224, 224);
-  margin-bottom: 8px;
+  margin-bottom: 20px;
   align-items: center;
   justify-content: center;
+  position: relative;
 
   &__checkbox {
     margin-left: 10px;
@@ -80,6 +81,11 @@
 
     &.save {
       background-color: rgb(23, 122, 23);
+
+      &:disabled {
+        cursor: not-allowed;
+        background-color: grey;
+      }
     }
 
     &.close {
@@ -92,5 +98,11 @@
     color: black;
     margin: 0;
     overflow: hidden;
+  }
+
+  &__error-message {
+    position: absolute;
+    color: red;
+    top: 43px;
   }
 }

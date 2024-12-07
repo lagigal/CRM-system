@@ -20,14 +20,17 @@ const CreateTask: React.FC<updateTaskListProps> = ({ updateTaskList }) => {
     return true;
   };
 
-  const saveTask = () => {
+  const saveTask = async() => {
     const task: TodoRequest = { title: taskText, isDone: false };
     if (!error && taskText) {
-      createTasks(task).then(() => {
+      try {
+        await createTasks(task);
         updateTaskList();
         setTaskText("");
         setError(null);
-      });
+      } catch (error) {
+          console.error("Failed to create task:", error);
+      }
     }
   };
 
