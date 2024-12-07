@@ -1,0 +1,108 @@
+.task {
+  display: flex;
+  flex-direction: row;
+  min-width: 300px;
+  height: 45px;
+  border-radius: 5px;
+  border: 1px solid #b6b6b65c;
+  background-color: rgb(224, 224, 224);
+  margin-bottom: 20px;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  &__checkbox {
+    margin-left: 10px;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #007bff;
+    border-radius: 50px;
+    cursor: pointer;
+    outline: none;
+    display: inline-block;
+    position: relative;
+
+    &:checked {
+      background-color: #007bff;
+      border-color: #007bff;
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 6px;
+        width: 4px;
+        height: 8px;
+        border: solid #fff;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+    }
+  }
+
+  &__input {
+    width: 250px;
+    height: 40px;
+    border: none;
+    box-sizing: border-box;
+    background-color: transparent;
+    text-align: center;
+    color: black;
+    font-size: 16px;
+    overflow: hidden;
+
+    &:focus-visible {
+      outline: none;
+      border: none;
+    }
+  }
+
+  &__button {
+    justify-content: flex-end;
+    width: 50px;
+    height: 80%;
+    border: none;
+    border-radius: 10px;
+    margin: 5px;
+
+    &:hover {
+      cursor: pointer;
+      opacity: 0.8;
+    }
+
+    &.trash {
+      background-color: rgb(199, 49, 49);
+    }
+
+    &.chenge {
+      background-color: rgb(54, 104, 203);
+    }
+
+    &.save {
+      background-color: rgb(23, 122, 23);
+
+      &:disabled {
+        cursor: not-allowed;
+        background-color: grey;
+      }
+    }
+
+    &.close {
+      background-color: rgb(199, 49, 49);
+    }
+  }
+
+  &__title {
+    width: 250px;
+    color: black;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  &__error-message {
+    position: absolute;
+    color: red;
+    top: 43px;
+  }
+}

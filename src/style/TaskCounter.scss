@@ -1,0 +1,24 @@
+.taskCounter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+
+  &__button {
+    padding: 5px 10px;
+    background-color: #d2d2d2;
+    border-radius: 20px;
+    border: none;
+    color: black;
+
+    &:hover {
+      cursor: pointer;
+      background-color: #d2d2d286;
+    }
+
+    &.active {
+      background-color: #aab3da;
+    }
+  }
+}
