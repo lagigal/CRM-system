@@ -6,8 +6,6 @@ import CreateTask from "../components/CreateTask";
 import TaskCounter from "../components/TaskCounter";
 import TaskList from "../components/TaskList";
 import CustomMenu from "../components/CustomMenu";
-import Sider from "antd/es/layout/Sider";
-import { Layout } from "antd";
 
 const Home: React.FC = () => {
   const [taskList, setTaskList] = useState<Todo[]>([]);
