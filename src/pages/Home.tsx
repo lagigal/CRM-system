@@ -43,7 +43,6 @@ const Home: React.FC = () => {
       <div className="home">
         <CreateTask updateTaskList={getAllTasks} />
         <TaskCounter
-          taskStatus={taskCategory}
           taskCounter={taskCount}
           setTaskCategory={setTaskCategory}
         />

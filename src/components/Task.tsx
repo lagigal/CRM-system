@@ -1,9 +1,9 @@
 import "../style/Task.scss";
 import { TaskProps } from "../constants/interfaces";
 import React, { ChangeEvent, useState } from "react";
-import trash from "../assets/trash.svg";
 import { deleteTasks, updateTask } from "../api/baseAPI";
-import { Button, Input } from "antd";
+import { Button, Checkbox, Input } from "antd";
+import { CheckOutlined, CloseOutlined, DeleteOutlined, FormOutlined } from "@ant-design/icons";
 
 const Task: React.FC<TaskProps> = ({ todo, updateTaskList }) => {
   const [isDoneTask, setIsDone] = useState<boolean>(todo.isDone);
@@ -24,22 +24,22 @@ const Task: React.FC<TaskProps> = ({ todo, updateTaskList }) => {
     return true;
   };
 
-  const chengeTask = async() => {
+  const chengeTask = async () => {
     const updetedTask = {
       title: newTitleTask,
       isDone: isDoneTask,
     };
     try {
       await updateTask(todo.id, updetedTask);
-      updateTaskList()
+      updateTaskList();
       setIsEditingTask(false);
-    setTitleTask(newTitleTask);
+      setTitleTask(newTitleTask);
     } catch (error) {
       console.error("Failed to fetch update task:", error);
     }
   };
 
-  const toggleDone = async() => {
+  const toggleDone = async () => {
     const updateIsDone = !isDoneTask;
     try {
       await updateTask(todo.id, { isDone: updateIsDone });
@@ -50,10 +50,10 @@ const Task: React.FC<TaskProps> = ({ todo, updateTaskList }) => {
     }
   };
 
-  const onDeleteTask = async() => {
+  const onDeleteTask = async () => {
     try {
       await deleteTasks(todo.id);
-      updateTaskList()
+      updateTaskList();
     } catch (error) {
       console.error("Failed to delete task:", error);
     }
@@ -76,12 +76,7 @@ const Task: React.FC<TaskProps> = ({ todo, updateTaskList }) => {
 
   return (
     <div className="task">
-      <Input
-        className="task__checkbox"
-        type="checkbox"
-        onChange={toggleDone}
-        checked={todo.isDone}
-      />
+      <Checkbox onChange={toggleDone} checked={todo.isDone} />
       {error && <div className="task__error-message">{error}</div>}
       {isEditingTask && (
         <>
@@ -93,17 +88,19 @@ const Task: React.FC<TaskProps> = ({ todo, updateTaskList }) => {
             onChange={handleChengeTitleTask}
           />
           <Button
-            className="task__button save"
+            color={"primary"}
+            variant={"solid"}
             onClick={chengeTask}
             disabled={error ? true : false}
           >
-            &#10004;
+            <CheckOutlined />
           </Button>
           <Button
-            className="task__button close"
+            color={"danger"}
+            variant={"solid"}
             onClick={handleCloseChengeTitleTask}
           >
-            &#10006;
+            <CloseOutlined />
           </Button>
         </>
       )}
@@ -111,13 +108,18 @@ const Task: React.FC<TaskProps> = ({ todo, updateTaskList }) => {
         <>
           <p className="task__title">{titleTask}</p>
           <Button
-            className="task__button chenge"
+            color={"primary"}
+            variant={"solid"}
             onClick={handleOpenChengeTitleTask}
           >
-            &#9998;
+            <FormOutlined />
           </Button>
-          <Button className="task__button trash" onClick={onDeleteTask}>
-            <img src={trash} />
+          <Button 
+            color={"danger"} 
+            variant={"solid"} 
+            onClick={onDeleteTask}
+          >
+            <DeleteOutlined />
           </Button>
         </>
       )}
