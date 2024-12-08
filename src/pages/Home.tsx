@@ -20,6 +20,13 @@ const Home: React.FC = () => {
     getAllTasks();
   }, [taskCategory]);
 
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      getAllTasks();
+    }, 5000);
+    return () => clearInterval(intervalId);
+  }, [taskCategory]);
+
   async function getAllTasks() {
     try {
       const data = await getTasks(taskCategory);
@@ -31,7 +38,7 @@ const Home: React.FC = () => {
   }
 
   return (
-      <>
+    <>
       <CustomMenu />
       <div className="home">
         <CreateTask updateTaskList={getAllTasks} />
