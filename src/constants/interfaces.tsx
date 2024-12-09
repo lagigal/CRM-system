@@ -9,7 +9,6 @@ export interface TaskListProps extends updateTaskListProps {
 export interface TaskCounterProps {
   taskCounter: TodoInfo;
   setTaskCategory: (a: TaskStatus) => void;
-  taskStatus: TaskStatus;
 }
 
 export interface TodoRequest {

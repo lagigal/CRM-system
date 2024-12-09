@@ -1,39 +1,43 @@
 import React from "react";
-import { TaskCounterProps } from "../constants/interfaces";
+import { TaskCounterProps, TaskStatus } from "../constants/interfaces";
 import "../style/TaskCounter.scss";
+import { Tabs } from "antd";
 
 const TaskCounter: React.FC<TaskCounterProps> = ({
   setTaskCategory,
   taskCounter,
-  taskStatus,
 }) => {
+  const tabItems = [
+    {
+      label: `Все (${taskCounter?.all})`, // Название вкладки
+      key: 'all', // Уникальный ключ для вкладки
+      children: null, // Контент вкладки, можно оставить пустым, если вкладка не раскрывает нового контента
+    },
+    {
+      label: `Завершенные (${taskCounter?.completed})`,
+      key: 'completed',
+      children: null,
+    },
+    {
+      label: `В работе (${taskCounter?.inWork})`,
+      key: 'inWork',
+      children: null,
+    },
+  ];
+
+  const handleTabChange = (key: string) => {
+    setTaskCategory(key as TaskStatus);
+  };
+
   return (
     <>
       <div className="taskCounter">
-        <button
-          className={`taskCounter__button ${
-            taskStatus === "all" ? "active" : ""
-          }`}
-          onClick={() => setTaskCategory("all")}
-        >
-          Все ({`${taskCounter?.all}`})
-        </button>
-        <button
-          className={`taskCounter__button ${
-            taskStatus === "completed" ? "active" : ""
-          }`}
-          onClick={() => setTaskCategory("completed")}
-        >
-          Завершенные ({`${taskCounter?.completed}`})
-        </button>
-        <button
-          className={`taskCounter__button ${
-            taskStatus === "inWork" ? "active" : ""
-          }`}
-          onClick={() => setTaskCategory("inWork")}
-        >
-          В работе ({`${taskCounter?.inWork}`})
-        </button>
+      <Tabs 
+      defaultActiveKey="all"
+      centered
+      items={tabItems}
+      onChange={handleTabChange}
+    />
       </div>
     </>
   );
