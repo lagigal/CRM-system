@@ -1,22 +1,43 @@
 import React from "react";
-import { TaskCounterProps } from "../constants/interfaces";
+import { TaskCounterProps, TaskStatus } from "../constants/interfaces";
 import "../style/TaskCounter.scss";
-import { Radio } from "antd";
+import { Tabs } from "antd";
 
 const TaskCounter: React.FC<TaskCounterProps> = ({
   setTaskCategory,
   taskCounter,
 }) => {
+  const tabItems = [
+    {
+      label: `Все (${taskCounter?.all})`, // Название вкладки
+      key: 'all', // Уникальный ключ для вкладки
+      children: null, // Контент вкладки, можно оставить пустым, если вкладка не раскрывает нового контента
+    },
+    {
+      label: `Завершенные (${taskCounter?.completed})`,
+      key: 'completed',
+      children: null,
+    },
+    {
+      label: `В работе (${taskCounter?.inWork})`,
+      key: 'inWork',
+      children: null,
+    },
+  ];
 
+  const handleTabChange = (key: string) => {
+    setTaskCategory(key as TaskStatus);
+  };
 
   return (
     <>
       <div className="taskCounter">
-      <Radio.Group onChange={(e) => setTaskCategory(e.target.value)}>
-        <Radio.Button value="all">Все ({`${taskCounter?.all}`})</Radio.Button>
-        <Radio.Button value="completed">Завершенные ({`${taskCounter?.completed}`})</Radio.Button>
-        <Radio.Button value="inWork">В работе ({`${taskCounter?.inWork}`})</Radio.Button>
-      </Radio.Group>
+      <Tabs 
+      defaultActiveKey="all"
+      centered
+      items={tabItems}
+      onChange={handleTabChange}
+    />
       </div>
     </>
   );

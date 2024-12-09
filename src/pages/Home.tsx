@@ -6,6 +6,8 @@ import CreateTask from "../components/CreateTask";
 import TaskCounter from "../components/TaskCounter";
 import TaskList from "../components/TaskList";
 import CustomMenu from "../components/CustomMenu";
+import { Layout } from "antd";
+import { Content } from "antd/es/layout/layout";
 
 const Home: React.FC = () => {
   const [taskList, setTaskList] = useState<Todo[]>([]);
@@ -38,17 +40,30 @@ const Home: React.FC = () => {
   }
 
   return (
-    <>
+    <Layout
+      style={{ minHeight: "100vh", display: "flex", flexDirection: "row" }}
+    >
       <CustomMenu />
-      <div className="home">
-        <CreateTask updateTaskList={getAllTasks} />
-        <TaskCounter
-          taskCounter={taskCount}
-          setTaskCategory={setTaskCategory}
-        />
-        <TaskList todos={taskList} updateTaskList={getAllTasks} />
-      </div>
-    </>
+      <Layout style={{margin: "20px", width: "100%"}}>
+        <Content
+          style={{
+            maxWidth: "500px",
+            padding: 24,
+            background: "#fff",
+            borderRadius: 8,
+            minHeight: "calc(100vh - 32px)",
+            margin: "0 auto"
+          }}
+        >
+          <CreateTask updateTaskList={getAllTasks} />
+          <TaskCounter
+            taskCounter={taskCount}
+            setTaskCategory={setTaskCategory}
+          />
+          <TaskList todos={taskList} updateTaskList={getAllTasks} />
+        </Content>
+      </Layout>
+    </Layout>
   );
 };
 
