@@ -44,7 +44,7 @@ const Home: React.FC = () => {
       style={{ minHeight: "100vh", display: "flex", flexDirection: "row" }}
     >
       <CustomMenu />
-      <Layout style={{margin: "20px", width: "100%"}}>
+      <Layout style={{ margin: "20px", width: "100%" }}>
         <Content
           style={{
             maxWidth: "500px",
@@ -52,7 +52,7 @@ const Home: React.FC = () => {
             background: "#fff",
             borderRadius: 8,
             minHeight: "calc(100vh - 32px)",
-            margin: "0 auto"
+            margin: "0 auto",
           }}
         >
           <CreateTask updateTaskList={getAllTasks} />

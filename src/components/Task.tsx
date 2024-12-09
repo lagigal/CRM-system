@@ -3,7 +3,12 @@ import { TaskProps } from "../constants/interfaces";
 import React, { ChangeEvent, useState } from "react";
 import { deleteTasks, updateTask } from "../api/baseAPI";
 import { Button, Checkbox, Input } from "antd";
-import { CheckOutlined, CloseOutlined, DeleteOutlined, FormOutlined } from "@ant-design/icons";
+import {
+  CheckOutlined,
+  CloseOutlined,
+  DeleteOutlined,
+  FormOutlined,
+} from "@ant-design/icons";
 
 const Task: React.FC<TaskProps> = ({ todo, updateTaskList }) => {
   const [isDoneTask, setIsDone] = useState<boolean>(todo.isDone);
@@ -114,11 +119,7 @@ const Task: React.FC<TaskProps> = ({ todo, updateTaskList }) => {
           >
             <FormOutlined />
           </Button>
-          <Button 
-            color={"danger"} 
-            variant={"solid"} 
-            onClick={onDeleteTask}
-          >
+          <Button color={"danger"} variant={"solid"} onClick={onDeleteTask}>
             <DeleteOutlined />
           </Button>
         </>

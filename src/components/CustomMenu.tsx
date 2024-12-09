@@ -1,10 +1,7 @@
 import React, { useState } from "react";
 import { Layout, Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
-import {
-  PieChartOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
+import { PieChartOutlined, UserOutlined } from "@ant-design/icons";
 
 const { Sider } = Layout;
 
@@ -22,23 +19,23 @@ const CustomMenu: React.FC = () => {
       label: <Link to="/profile">Профиль</Link>,
       key: "/profile",
       icon: <UserOutlined />,
-    }
+    },
   ];
 
   return (
-    <Layout  style={{ minHeight: "100vh" }}>
+    <Layout style={{ minHeight: "100vh" }}>
       <Sider
         theme="light"
         collapsible
         collapsed={collapsed}
         onCollapse={(value) => setCollapsed(value)}
-        style={{paddingTop: 64}}
+        style={{ paddingTop: 64 }}
       >
         <div className="demo-logo-vertical" />
         <Menu
           theme="light"
           mode="inline"
-          selectedKeys={[location.pathname]} 
+          selectedKeys={[location.pathname]}
           items={items}
         />
       </Sider>
@@ -47,4 +44,3 @@ const CustomMenu: React.FC = () => {
 };
 
 export default CustomMenu;
-
