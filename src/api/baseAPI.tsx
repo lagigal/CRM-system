@@ -1,14 +1,18 @@
 import axios from "axios";
 import {
+  AuthData,
+  Profile,
   TaskStatus,
   Todo,
   TodoRequest,
+  Token,
+  UserRegistration,
   dataTasks,
 } from "../constants/interfaces";
+import { deleteCookie, getCookie, setCookie } from "../utils";
 
 const axiosInstance = axios.create({
   baseURL: "https://easydev.club/api/v1",
-  timeout: 5000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -16,8 +20,51 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.response.use(
   (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (!refreshToken) {
+        console.error("No refresh token available");
+        return Promise.reject(error);
+      }
+
+      try {
+        const response = await axiosInstance.post("/auth/refresh", {
+          refreshToken,
+        });
+        console.log(response);
+        const { accessToken, refreshToken: newRefreshToken } = response.data;
+
+        localStorage.setItem("refreshToken", newRefreshToken);
+        setCookie("accessToken", accessToken);
+
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        console.error("Failed to refresh token:", refreshError);
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const accessToken = getCookie("accessToken");
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    } else {
+      delete config.headers.Authorization;
+    }
+    return config;
+  },
   (error) => {
-    console.error("API Error:", error);
     return Promise.reject(error);
   }
 );
@@ -46,4 +93,32 @@ export async function updateTask(
   updatedData: TodoRequest
 ): Promise<Todo> {
   return axiosInstance.put(`/todos/${id}`, updatedData);
+}
+
+export async function userRegistration(
+  userData: UserRegistration
+): Promise<Profile> {
+  return axiosInstance.post(`/auth/signup`, userData);
+}
+
+export async function userAuth(authData: AuthData): Promise<Token> {
+  const response = await axiosInstance.post(`/auth/signin`, authData);
+  return response.data;
+}
+
+export async function userLogout() {
+  try {
+    await axiosInstance.post(`/user/logout`);
+  } catch (error) {
+    console.error("Logout failed:", error);
+  } finally {
+    deleteCookie("accessToken");
+    localStorage.removeItem("refreshToken");
+    delete axiosInstance.defaults.headers.common["Authorization"];
+  }
+}
+
+export async function userProfile(): Promise<Profile> {
+  const response = await axiosInstance.get(`/user/profile`);
+  return response.data;
 }

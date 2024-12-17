@@ -1,8 +1,19 @@
 import { Layout } from "antd";
 import CustomMenu from "../components/CustomMenu";
 import { Content } from "antd/es/layout/layout";
+import { useDispatch, useSelector } from "../store";
+import { userProfileThunk, selectUser } from "../slices/userSlice";
+import { useEffect } from "react";
 
 const Profile: React.FC = () => {
+  const dispatch = useDispatch();
+  
+  useEffect(() => {
+    dispatch(userProfileThunk());
+  }, [dispatch]);
+
+  const userData = useSelector(selectUser);
+  
   return (
     <>
       <Layout
@@ -20,7 +31,16 @@ const Profile: React.FC = () => {
               margin: "0 auto",
             }}
           >
-            <div style={{ color: "black" }}>Профиль пользователя</div>
+            <div style={{ color: "black" }}><h1>Профиль пользователя</h1>
+            {userData ? (
+              <div>
+                <p>Имя: {userData.username}</p>
+                <p>Email: {userData.email}</p>
+                <p>номер: {userData.phoneNumber}</p>
+              </div>
+            ) : (
+              <p>Загрузка данных...</p>
+            )}</div>
           </Content>
         </Layout>
       </Layout>
