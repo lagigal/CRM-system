@@ -21,7 +21,7 @@ const CreateTask: React.FC<updateTaskListProps> = ({ updateTaskList }) => {
     return true;
   };
 
-  const saveTask = async() => {
+  const saveTask = async () => {
     const task: TodoRequest = { title: taskText, isDone: false };
     if (!error && taskText) {
       try {
@@ -30,7 +30,7 @@ const CreateTask: React.FC<updateTaskListProps> = ({ updateTaskList }) => {
         setTaskText("");
         setError(null);
       } catch (error) {
-          console.error("Failed to create task:", error);
+        console.error("Failed to create task:", error);
       }
     }
   };
@@ -46,7 +46,12 @@ const CreateTask: React.FC<updateTaskListProps> = ({ updateTaskList }) => {
   return (
     <>
       <div className="createTask">
-        <Input maxLength={65} placeholder="Добавьте задачу..." value={taskText} onChange={hendleChangeCreateTaskInput}/>
+        <Input
+          maxLength={65}
+          placeholder="Добавьте задачу..."
+          value={taskText}
+          onChange={hendleChangeCreateTaskInput}
+        />
         {error && <div className="createTask__error-message">{error}</div>}
         <Button onClick={saveTask}>Добавить</Button>
       </div>

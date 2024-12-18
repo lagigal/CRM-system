@@ -9,18 +9,18 @@ const TaskCounter: React.FC<TaskCounterProps> = ({
 }) => {
   const tabItems = [
     {
-      label: `Все (${taskCounter?.all})`, // Название вкладки
-      key: 'all', // Уникальный ключ для вкладки
-      children: null, // Контент вкладки, можно оставить пустым, если вкладка не раскрывает нового контента
+      label: `Все (${taskCounter?.all})`,
+      key: "all",
+      children: null,
     },
     {
       label: `Завершенные (${taskCounter?.completed})`,
-      key: 'completed',
+      key: "completed",
       children: null,
     },
     {
       label: `В работе (${taskCounter?.inWork})`,
-      key: 'inWork',
+      key: "inWork",
       children: null,
     },
   ];
@@ -32,12 +32,12 @@ const TaskCounter: React.FC<TaskCounterProps> = ({
   return (
     <>
       <div className="taskCounter">
-      <Tabs 
-      defaultActiveKey="all"
-      centered
-      items={tabItems}
-      onChange={handleTabChange}
-    />
+        <Tabs
+          defaultActiveKey="all"
+          centered
+          items={tabItems}
+          onChange={handleTabChange}
+        />
       </div>
     </>
   );
