@@ -47,7 +47,7 @@ const Home: React.FC = () => {
       <Layout style={{ margin: "20px", width: "100%" }}>
         <Content
           style={{
-            maxWidth: "500px",
+            width: "500px",
             padding: 24,
             background: "#fff",
             borderRadius: 8,

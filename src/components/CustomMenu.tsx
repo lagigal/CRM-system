@@ -6,7 +6,8 @@ import {
   UnorderedListOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { userLogout } from "../api/baseAPI";
+import { useDispatch } from "../store";
+import { logoutUserThunk } from "../slices/userSlice";
 
 const { Sider } = Layout;
 
@@ -15,20 +16,22 @@ const CustomMenu: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const showLogoutModal = () => {
     setIsModalVisible(true);
   };
 
-  const handleLogoutOk = async () => {
-    try {
-      await userLogout();
-      navigate("/login"); // Перенаправляем на страницу логина
-    } catch (error) {
-      console.error("Ошибка логаута:", error);
-    } finally {
-      setIsModalVisible(false);
-    }
+  const handleLogoutOk = () => {
+    dispatch(logoutUserThunk())
+      .unwrap()
+      .then(() => {
+        setIsModalVisible(false);
+        navigate("/login");
+      })
+      .catch((error) => {
+        console.error("Ошибка логаута:", error);
+      })
   };
 
   const handleLogoutCancel = () => {
@@ -73,7 +76,7 @@ const CustomMenu: React.FC = () => {
       </Sider>
       <Modal
         title="Подтверждение выхода"
-        open={isModalVisible} 
+        open={isModalVisible}
         onOk={handleLogoutOk}
         onCancel={handleLogoutCancel}
         okText="Да, выйти"

@@ -9,7 +9,6 @@ import {
   UserRegistration,
   dataTasks,
 } from "../constants/interfaces";
-import { deleteCookie, getCookie, setCookie } from "../utils";
 
 const axiosInstance = axios.create({
   baseURL: "https://easydev.club/api/v1",
@@ -40,7 +39,7 @@ axiosInstance.interceptors.response.use(
         const { accessToken, refreshToken: newRefreshToken } = response.data;
 
         localStorage.setItem("refreshToken", newRefreshToken);
-        setCookie("accessToken", accessToken);
+        localStorage.setItem("accessToken", accessToken);
 
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return axiosInstance(originalRequest);
@@ -56,7 +55,7 @@ axiosInstance.interceptors.response.use(
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const accessToken = getCookie("accessToken");
+    const accessToken = localStorage.getItem("accessToken");
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     } else {
@@ -112,7 +111,7 @@ export async function userLogout() {
   } catch (error) {
     console.error("Logout failed:", error);
   } finally {
-    deleteCookie("accessToken");
+    localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     delete axiosInstance.defaults.headers.common["Authorization"];
   }

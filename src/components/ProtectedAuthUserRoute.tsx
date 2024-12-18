@@ -1,11 +1,12 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { getCookie } from "../utils";
+import { useSelector } from "../store";
+import { selectIsAuthUser } from "../slices/userSlice";
 
 const ProtectedAuthUserRoute: React.FC = () => {
-  const accessToken = getCookie("accessToken");
+  const isAuth = useSelector(selectIsAuthUser)
   const location = useLocation();
 
-  return accessToken?.trim() ? (
+  return isAuth ? (
       <Navigate to="/" state={{ from: location }} />
 ) : (
       <Outlet />
