@@ -4,10 +4,11 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LogoutOutlined,
   UnorderedListOutlined,
+  UsergroupAddOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { useDispatch } from "../store";
-import { logoutUserThunk } from "../slices/userSlice";
+import { useDispatch, useSelector } from "../store";
+import { logoutUserThunk, selectUser } from "../slices/userSlice";
 
 const { Sider } = Layout;
 
@@ -31,31 +32,57 @@ const CustomMenu: React.FC = () => {
       })
       .catch((error) => {
         console.error("Ошибка логаута:", error);
-      })
+      });
   };
 
   const handleLogoutCancel = () => {
     setIsModalVisible(false);
   };
 
-  const items = [
-    {
-      label: <Link to="/">Список задач</Link>,
-      key: "/", // Ключ для идентификации текущего маршрута
-      icon: <UnorderedListOutlined />,
-    },
-    {
-      label: <Link to="/profile">Профиль</Link>,
-      key: "/profile",
-      icon: <UserOutlined />,
-    },
-    {
-      onClick: showLogoutModal,
-      label: "Выйти",
-      key: "/login",
-      icon: <LogoutOutlined />,
-    },
-  ];
+  const isAdmin = useSelector(selectUser)?.isAdmin;
+
+  const items = isAdmin
+    ? [
+        {
+          label: <Link to="/">Список задач</Link>,
+          key: "/", // Ключ для идентификации текущего маршрута
+          icon: <UnorderedListOutlined />,
+        },
+        {
+          label: <Link to="/profile">Профиль</Link>,
+          key: "/profile",
+          icon: <UserOutlined />,
+        },
+        {
+          label: <Link to="/users">Пользователи</Link>,
+          key: "/users",
+          icon: <UsergroupAddOutlined />,
+        },
+        {
+          onClick: showLogoutModal,
+          label: "Выйти",
+          key: "/login",
+          icon: <LogoutOutlined />,
+        },
+      ]
+    : [
+        {
+          label: <Link to="/">Список задач</Link>,
+          key: "/",
+          icon: <UnorderedListOutlined />,
+        },
+        {
+          label: <Link to="/profile">Профиль</Link>,
+          key: "/profile",
+          icon: <UserOutlined />,
+        },
+        {
+          onClick: showLogoutModal,
+          label: "Выйти",
+          key: "/login",
+          icon: <LogoutOutlined />,
+        },
+      ];
 
   return (
     <Layout style={{ minHeight: "100vh" }}>

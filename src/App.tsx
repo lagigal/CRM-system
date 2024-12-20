@@ -5,6 +5,8 @@ import Registration from "./pages/Registration";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedAuthUserRoute from "./components/ProtectedAuthUserRoute";
+import Users from "./pages/Users";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 
 function App() {
   return (
@@ -17,6 +19,9 @@ function App() {
         <Route element={<ProtectedAuthUserRoute />}>
           <Route path="/registration" element={<Registration />} />
           <Route path="/login" element={<Login />} />
+        </Route>
+        <Route element={<ProtectedAdminRoute />}>
+          <Route path="/users" element={<Users />} />
         </Route>
       </Routes>
     </>

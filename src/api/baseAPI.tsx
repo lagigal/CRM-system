@@ -1,14 +1,19 @@
 import axios from "axios";
 import {
   AuthData,
+  MetaResponse,
   Profile,
   TaskStatus,
   Todo,
   TodoRequest,
   Token,
+  User,
+  UserFilters,
   UserRegistration,
+  UserRequest,
   dataTasks,
 } from "../constants/interfaces";
+import { logoutUserThunk } from "../slices/userSlice";
 
 const axiosInstance = axios.create({
   baseURL: "https://easydev.club/api/v1",
@@ -23,6 +28,12 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      if (originalRequest.url.includes("/auth/refresh")) {
+        // Если запрос на обновление токена тоже вернул 401, выполняем logout
+        logoutUserThunk();
+        return Promise.reject(error);
+      }
+
       originalRequest._retry = true;
 
       const refreshToken = localStorage.getItem("refreshToken");
@@ -120,4 +131,42 @@ export async function userLogout() {
 export async function userProfile(): Promise<Profile> {
   const response = await axiosInstance.get(`/user/profile`);
   return response.data;
+}
+
+export async function getUsers(
+  filters: UserFilters
+): Promise<MetaResponse<User>> {
+  const response = await axiosInstance.get(`/admin/users`, {
+    params: filters,
+  });
+  return response.data;
+}
+
+export async function deleteUser(id: number): Promise<void> {
+  await axiosInstance.delete(`/admin/users/${id}`);
+}
+
+export async function blockUser(id: number): Promise<void> {
+  await axiosInstance.post(`/admin/users/${id}/block`);
+}
+
+export async function unblockUser(id: number): Promise<void> {
+  await axiosInstance.post(`/admin/users/${id}/unblock`);
+}
+
+export async function updateUserRights(
+  id: number,
+  value: boolean
+): Promise<void> {
+  await axiosInstance.post(`/admin/users/${id}/rights`, {
+    field: "isAdmin",
+    value: value,
+  });
+}
+
+export async function updateUserData(
+  id: number,
+  value: UserRequest
+): Promise<void> {
+  await axiosInstance.put(`/admin/users/${id}`, value);
 }
