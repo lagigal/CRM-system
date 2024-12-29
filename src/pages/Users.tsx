@@ -1,4 +1,5 @@
 import React, { ChangeEvent, useEffect, useState } from "react";
+import type { ColumnsType, TableProps } from "antd/es/table";
 import {
   Table,
   Tag,
@@ -7,52 +8,51 @@ import {
   Layout,
   notification,
   Input,
-  Dropdown,
-  MenuProps,
   Modal,
-  Form,
   Pagination,
 } from "antd";
 import {
   MailOutlined,
-  PhoneOutlined,
   UnlockOutlined,
   LockOutlined,
   RightOutlined,
   DeleteOutlined,
   ArrowUpOutlined,
   ArrowDownOutlined,
-  DownOutlined,
 } from "@ant-design/icons";
 import {
   blockUser,
   deleteUser,
   getUsers,
   unblockUser,
-  updateUserData,
   updateUserRights,
 } from "../api/baseAPI";
-import { User, UserKeys, UserRequest } from "../constants/interfaces";
+import { User, UserKeys } from "../constants/interfaces";
 import CustomMenu from "../components/CustomMenu";
 import { Content } from "antd/es/layout/layout";
+import type { TablePaginationConfig } from "antd/es/table/interface";
+import type { SorterResult, FilterValue } from "antd/es/table/interface";
+import { useNavigate } from "react-router-dom";
 
 const Users: React.FC = () => {
   const [usersList, setUsersList] = useState<User[]>([]);
-  const [isDeleteUserModalVisible, setIsDeleteUserModalVisible] =
+
+  // --- Состояния для модалок ---
+  const [isDeleteUserModalVisible, setIsDeleteUserModalVisible] = useState(false);
+  const [isBlockUserModalVisible, setIsBlockUserModalVisible] = useState(false);
+  const [isUpdateUserRightsModalVisible, setIsUpdateUserRightsModalVisible] =
     useState(false);
-  const [isChangeUserDataModalVisible, setIsChangeUserDataModalVisible] =
-    useState(false);
+
+  // --- Параметры для действия в модалках ---
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [blockModalActionText, setBlockModalActionText] = useState("");
+  const [blockState, setBlockState] = useState<boolean | null>(null);
+  const [newRights, setNewRights] = useState<boolean | null>(null);
+  const [updateUserRightsActionText, setUpdateUserRightsActionText] = useState(
+    ""
+  );
 
-  const [userNameInput, setUserNameInput] = useState("");
-  const [userMailInput, setUserMailInput] = useState("");
-  const [userPhoneInput, setUserPhoneInput] = useState("");
-  const [originalUserData, setOriginalUserData] = useState<UserRequest>({
-    username: "",
-    email: "",
-    phoneNumber: "",
-  });
-
+  // --- Параметры сортировки, фильтрации, пагинации ---
   const [searchInput, setSearchInput] = useState("");
   const [sortByType, setSortByType] = useState<UserKeys>("id");
   const [sortOrderType, setSortOrderType] = useState<"ASC" | "DESC">("ASC");
@@ -60,10 +60,16 @@ const Users: React.FC = () => {
   const [isBlockedType, setIsBlockedType] = useState<boolean | undefined>(
     undefined
   );
-
-  const [limitOnPage, _] = useState<number>(20);
+  const [limitOnPage] = useState<number>(20);
   const [totalAmount, setTotalAmount] = useState<number>(0);
 
+  // --- Навигация для редактирования пользователя ---
+  const navigate = useNavigate();
+  const handleEditUser = (id: number) => {
+    navigate(`/users/${id}/edit`);
+  };
+
+  // --- Получение списка пользователей ---
   const fetchUsers = async () => {
     const fetchFilters = {
       search: searchInput,
@@ -86,15 +92,93 @@ const Users: React.FC = () => {
     fetchUsers();
   }, [searchInput, sortByType, sortOrderType, offsetNum, isBlockedType]);
 
-  //удаление пользоаателя////////////////////////////////
+  // --- Обработчик таблицы (сортировка, фильтры, пагинация) ---
+  const handleTableChange: TableProps<User>["onChange"] = (
+    pagination: TablePaginationConfig,
+    filters: Record<string, FilterValue | null>,
+    sorter: SorterResult<User> | SorterResult<User>[]
+  ) => {
+    // 1) Сортировка
+    if (!Array.isArray(sorter)) {
+      if (sorter.field && sorter.order) {
+        setSortByType(sorter.field as UserKeys);
+        setSortOrderType(sorter.order === "ascend" ? "ASC" : "DESC");
+      } else {
+        setSortByType("id");
+        setSortOrderType("ASC");
+      }
+    }
+
+    // 2) Фильтр «isBlocked»
+    const blockFilterValue = filters.isBlocked as string[] | undefined;
+    if (blockFilterValue && blockFilterValue.length > 0) {
+      if (blockFilterValue[0] === "true") {
+        setIsBlockedType(true);
+      } else if (blockFilterValue[0] === "false") {
+        setIsBlockedType(false);
+      } else {
+        setIsBlockedType(undefined);
+      }
+    } else {
+      setIsBlockedType(undefined);
+    }
+  };
+
+  // --- Модалка блокировки/разблокировки ---
+  const showBlockUserModal = (userId: number, newBlockState: boolean) => {
+    setSelectedUserId(userId);
+    setBlockState(newBlockState);
+    setBlockModalActionText(newBlockState ? "заблокировать" : "разблокировать");
+    setIsBlockUserModalVisible(true);
+  };
+
+  const handleConfirmBlockUser = async () => {
+    if (selectedUserId === null || blockState === null) return;
+
+    try {
+      if (blockState) {
+        await blockUser(selectedUserId);
+        notification.success({
+          message: `Пользователь c id:${selectedUserId} заблокирован`,
+        });
+      } else {
+        await unblockUser(selectedUserId);
+        notification.success({
+          message: `Пользователь c id:${selectedUserId} разблокирован`,
+        });
+      }
+      fetchUsers();
+    } catch (error) {
+      console.error("Ошибка при (раз)блокировке пользователя:", error);
+      notification.error({
+        message: "Ошибка при (раз)блокировке пользователя",
+      });
+    } finally {
+      setIsBlockUserModalVisible(false);
+      setSelectedUserId(null);
+      setBlockState(null);
+    }
+  };
+
+  const handleBlockUserModalCancel = () => {
+    setIsBlockUserModalVisible(false);
+    setSelectedUserId(null);
+    setBlockState(null);
+  };
+
+  // --- Модалка удаления пользователя ---
+  const showDeleteUserModal = (userId: number) => {
+    setSelectedUserId(userId);
+    setIsDeleteUserModalVisible(true);
+  };
+
   const handleDeleteUser = async () => {
     if (selectedUserId === null) return;
-
     try {
       await deleteUser(selectedUserId);
       fetchUsers();
       notification.success({
-        message: `Пользователсь c id:${selectedUserId} удален`,
+        message: `Пользователь c id:${selectedUserId} удален`,
       });
       setIsDeleteUserModalVisible(false);
       setSelectedUserId(null);
@@ -104,215 +188,84 @@ const Users: React.FC = () => {
     }
   };
 
-  const showDeleteUserModal = (userId: number) => {
-    setSelectedUserId(userId);
-    setIsDeleteUserModalVisible(true);
-  };
-
   const handleDeleteUserCancel = () => {
     setIsDeleteUserModalVisible(false);
     setSelectedUserId(null);
   };
 
-  //редактирование данных пользователя//////////////////////////////
-  const showChangeUserDataModal = (record: User) => {
-    setSelectedUserId(record.id);
-    setIsChangeUserDataModalVisible(true);
+  // --- Модалка изменения прав (админ/пользователь) ---
+  const showUpdateUserRightsModal = (userId: number, newRights: boolean) => {
+    setSelectedUserId(userId);
+    setNewRights(newRights);
 
-    setUserNameInput(record.username);
-    setUserMailInput(record.email);
-    setUserPhoneInput(record.phoneNumber);
+    setUpdateUserRightsActionText(
+      newRights
+        ? "повысить пользователя до администратора"
+        : "понизить администратора до пользователя"
+    );
 
-    setOriginalUserData({
-      username: record.username,
-      email: record.email,
-      phoneNumber: record.phoneNumber,
-    });
+    setIsUpdateUserRightsModalVisible(true);
   };
 
-  const handleChangeUserDataCancel = () => {
-    setIsChangeUserDataModalVisible(false);
-    setSelectedUserId(null);
-  };
-
-  const handleChangeUserData = async () => {
-    if (selectedUserId === null) return;
-
-    const newUserData: UserRequest = {};
-
-    if (userNameInput !== originalUserData.username) {
-      newUserData.username = userNameInput;
-    }
-    if (userMailInput !== originalUserData.email) {
-      newUserData.email = userMailInput;
-    }
-    if (userPhoneInput !== originalUserData.phoneNumber) {
-      newUserData.phoneNumber = userPhoneInput;
-    }
-
-    if (Object.keys(newUserData).length === 0) {
-      notification.info({ message: "Нет изменений для обновления" });
-      return;
-    }
-
-    try {
-      await updateUserData(selectedUserId, newUserData);
-      fetchUsers();
-      notification.success({
-        message: `Данные пользователя c id:${selectedUserId} изменены`,
-      });
-      setIsChangeUserDataModalVisible(false);
+  const handleConfirmUpdateUserRights = async () => {
+    if (selectedUserId !== null && newRights !== null) {
+      await handleUpdateUserRights(selectedUserId, newRights);
+      setIsUpdateUserRightsModalVisible(false);
       setSelectedUserId(null);
-    } catch (error) {
-      console.error("Ошибка при редактировании данных пользователя:", error);
-      notification.error({
-        message: "Ошибка при редактировании данных пользователя",
-      });
+      setNewRights(null);
     }
   };
 
-  const hendleChangeuserNameInput = (e: ChangeEvent<HTMLInputElement>) => {
-    setUserNameInput(e.target.value);
-  };
-
-  const hendleChangeuserMailInput = (e: ChangeEvent<HTMLInputElement>) => {
-    setUserMailInput(e.target.value);
-  };
-
-  const hendleChangeuserPhoneInput = (e: ChangeEvent<HTMLInputElement>) => {
-    setUserPhoneInput(e.target.value);
-  };
-
-  //Блокировка пользователя////////////////////////////////////////////////////
-  const handleBlockUser = async (id: number) => {
-    try {
-      await blockUser(id);
-      fetchUsers();
-      notification.success({
-        message: `Пользователсь c id:${id} заблокирован`,
-      });
-    } catch (error) {
-      console.error("Ошибка при блокировке пользователя:", error);
-      notification.error({ message: "Ошибка при блокировке пользователя" });
-    }
-  };
-
-  const handleUnblockUser = async (id: number) => {
-    try {
-      await unblockUser(id);
-      fetchUsers();
-      notification.success({
-        message: `Пользователсь c id:${id} разблокирован`,
-      });
-    } catch (error) {
-      console.error("Ошибка при разблокировании пользователя:", error);
-      notification.error({
-        message: "Ошибка при разблокировании пользователя",
-      });
-    }
-  };
-
-  //обновление прав пользователя/////////////////////////////////////////////////
   const handleUpdateUserRights = async (id: number, value: boolean) => {
     try {
       await updateUserRights(id, value);
       fetchUsers();
       notification.success({
-        message: `Изменены права у полоьзователя c id:${id}`,
+        message: `Изменены права пользователя c id:${id}`,
       });
     } catch (error) {
-      console.error("Ошибка при изменнении роли пользователя:", error);
+      console.error("Ошибка при изменении роли пользователя:", error);
       notification.error({
-        message: "Ошибка при изменнении роли пользователя",
+        message: "Ошибка при изменении роли пользователя",
       });
     }
   };
 
-  //фильтрация///////////////////////////////////////////////////////////////////
-  const hendleChangeSearchInput = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleUpdateUserRightsCancel = () => {
+    setIsUpdateUserRightsModalVisible(false);
+    setSelectedUserId(null);
+    setNewRights(null);
+  };
+
+  // --- Фильтр по имени/email ---
+  const handleChangeSearchInput = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchInput(e.target.value);
   };
 
-  const handleSortByTypeMenuClick: MenuProps["onClick"] = (info) => {
-    setSortByType(info.key as UserKeys);
-  };
-
-  const handleSortOrderTypeMenuClick: MenuProps["onClick"] = (info) => {
-    setSortOrderType(info.key as "ASC" | "DESC");
-  };
-
-  const handleSortByBlock: MenuProps["onClick"] = (info) => {
-    let value: boolean | undefined;
-
-    // Преобразование строки в boolean или undefined
-    if (info.key === "true") {
-      value = true;
-    } else if (info.key === "false") {
-      value = false;
-    } else {
-      value = undefined;
-    }
-
-    setIsBlockedType(value);
-  };
-
-  const sortByTypeItems: MenuProps["items"] = [
-    {
-      key: "id",
-      label: <p>id</p>,
-    },
-    {
-      key: "username",
-      label: <p>Имени</p>,
-    },
-    {
-      key: "email",
-      label: <p>Email</p>,
-    },
-    {
-      key: "date",
-      label: <p>Дате регистрации</p>,
-    },
-  ];
-
-  const sortOrderTypeItems: MenuProps["items"] = [
-    {
-      key: "ASC",
-      label: <p>Возрастания</p>,
-    },
-    {
-      key: "DESC",
-      label: <p>Убывания</p>,
-    },
-  ];
-
-  const sortByBlock: MenuProps["items"] = [
-    {
-      key: "undefined",
-      label: <p>Все пользователи</p>,
-    },
-    {
-      key: "true",
-      label: <p>Заблокированные</p>,
-    },
-    {
-      key: "false",
-      label: <p>Активные</p>,
-    },
-  ];
-
-  // Определяем столбцы для таблицы
-  const columns = [
+  const columns: ColumnsType<User> = [
     {
       title: "Имя",
       dataIndex: "username",
       key: "username",
-      render: (text: string) => <Space>{text}</Space>,
+      sorter: true,
+      sortOrder:
+        sortByType === "username"
+          ? sortOrderType === "ASC"
+            ? "ascend"
+            : "descend"
+          : null,
     },
     {
       title: "Email",
       dataIndex: "email",
       key: "email",
+      sorter: true,
+      sortOrder:
+        sortByType === "email"
+          ? sortOrderType === "ASC"
+            ? "ascend"
+            : "descend"
+          : null,
       render: (email: string) => (
         <Space>
           <MailOutlined />
@@ -329,17 +282,18 @@ const Users: React.FC = () => {
       title: "Телефон",
       dataIndex: "phoneNumber",
       key: "phoneNumber",
-      render: (phone: string) => (
-        <Space>
-          <PhoneOutlined />
-          {phone}
-        </Space>
-      ),
     },
     {
       title: "Дата регистрации",
       dataIndex: "date",
       key: "date",
+      sorter: true,
+      sortOrder:
+        sortByType === "date"
+          ? sortOrderType === "ASC"
+            ? "ascend"
+            : "descend"
+          : null,
       render: (date: string) =>
         new Date(date).toLocaleDateString("ru-RU", {
           day: "2-digit",
@@ -348,251 +302,218 @@ const Users: React.FC = () => {
         }),
     },
     {
-      title: "Роль",
-      dataIndex: "isAdmin",
-      key: "isAdmin",
-      render: (_: any, record: User) => {
+      title: "Статус/Блокировка",
+      dataIndex: "isBlocked",
+      key: "isBlocked",
+      filters: [
+        { text: "Все пользователи", value: "undefined" },
+        { text: "Заблокированные", value: "true" },
+        { text: "Активные", value: "false" },
+      ],
+      filteredValue: isBlockedType !== undefined ? [String(isBlockedType)] : [],
+      onFilter: () => true,
+      render: (_, record: User) => {
+        const isBlockedTag = record.isBlocked ? (
+          <Tag color="red">Заблок</Tag>
+        ) : (
+          <Tag color="green">Актив</Tag>
+        );
+
+        const blockButton = record.isBlocked ? (
+          <Button
+            icon={<UnlockOutlined />}
+            type="default"
+            size="small"
+            onClick={() => showBlockUserModal(record.id, false)}
+          >
+            Разблок
+          </Button>
+        ) : (
+          <Button
+            icon={<LockOutlined />}
+            type="default"
+            size="small"
+            onClick={() => showBlockUserModal(record.id, true)}
+          >
+            Заблок
+          </Button>
+        );
+
         return (
-          <>
-            {record.isAdmin ? (
-              <>
-                <Space>
-                  <Tag color={"orange"}>Админ</Tag>
-                  <Button
-                    icon={<ArrowDownOutlined />}
-                    danger
-                    type="default"
-                    size="small"
-                    onClick={() => {
-                      handleUpdateUserRights(record.id, false);
-                    }}
-                  />
-                </Space>
-              </>
-            ) : (
-              <>
-                <Space>
-                  <Tag color={"blue"}>Пользователь</Tag>
-                  <Button
-                    icon={<ArrowUpOutlined />}
-                    color="primary"
-                    type="default"
-                    size="small"
-                    onClick={() => {
-                      handleUpdateUserRights(record.id, true);
-                    }}
-                  />
-                </Space>
-              </>
-            )}
-          </>
+          <Space>
+            {isBlockedTag}
+            {blockButton}
+          </Space>
         );
       },
     },
     {
-      title: "Блокировка",
-      key: "statusActions",
-      render: (_: any, record: User) => (
-        <Space>
-          {record.isBlocked ? (
-            <Tag color="red">Заблок</Tag>
+      title: "Роль",
+      dataIndex: "isAdmin",
+      key: "isAdmin",
+      render: (_, record: User) => (
+        <>
+          {record.isAdmin ? (
+            <Space>
+              <Tag color="orange">Админ</Tag>
+              <Button
+                icon={<ArrowDownOutlined />}
+                danger
+                type="default"
+                size="small"
+                onClick={() => {
+                  showUpdateUserRightsModal(record.id, false);
+                }}
+              />
+            </Space>
           ) : (
-            <Tag color="green">Актив</Tag>
+            <Space>
+              <Tag color="blue">Пользователь</Tag>
+              <Button
+                icon={<ArrowUpOutlined />}
+                type="default"
+                size="small"
+                onClick={() => {
+                  showUpdateUserRightsModal(record.id, true);
+                }}
+              />
+            </Space>
           )}
-          {record.isBlocked ? (
-            <Button
-              icon={<UnlockOutlined />}
-              type="default"
-              size="small"
-              onClick={() => handleUnblockUser(record.id)}
-            >
-              Разблок
-            </Button>
-          ) : (
-            <Button
-              icon={<LockOutlined />}
-              type="default"
-              size="small"
-              onClick={() => handleBlockUser(record.id)}
-            >
-              Заблок
-            </Button>
-          )}
-        </Space>
+        </>
       ),
     },
     {
-      title: "",
-      key: "delete",
-      render: (_: any, record: User) => (
-        <Space>
+      title: "Действия",
+      key: "actions",
+      render: (_, record: User) => {
+        const deleteBtn = (
           <Button
             icon={<DeleteOutlined />}
             size="small"
             danger
             onClick={() => showDeleteUserModal(record.id)}
           />
-        </Space>
-      ),
-    },
-    {
-      title: "",
-      key: "chengeData",
-      render: (_: any, record: User) => (
-        <Space>
+        );
+        const editBtn = (
           <Button
             icon={<RightOutlined />}
             size="small"
-            onClick={() => showChangeUserDataModal(record)}
+            onClick={() => handleEditUser(record.id)}
           />
-        </Space>
-      ),
+        );
+        return (
+          <Space>
+            {deleteBtn}
+            {editBtn}
+          </Space>
+        );
+      },
     },
   ];
 
   return (
-    <>
-      <Layout
-        style={{ minHeight: "100vh", display: "flex", flexDirection: "row" }}
-      >
-        <CustomMenu />
-        <Layout style={{ margin: "20px", width: "100%" }}>
-          <Content
+    <Layout style={{ minHeight: "100vh", display: "flex", flexDirection: "row" }}>
+      <CustomMenu />
+      <Layout style={{ margin: "20px", width: "100%" }}>
+        <Content
+          style={{
+            width: "100%",
+            padding: 24,
+            background: "#fff",
+            borderRadius: 8,
+            minHeight: "calc(100vh - 32px)",
+            margin: "0 auto",
+          }}
+        >
+          <Input
+            maxLength={65}
+            placeholder="Поиск по имени или email"
+            value={searchInput}
+            onChange={handleChangeSearchInput}
             style={{
-              width: "100%",
-              padding: 24,
-              background: "#fff",
-              borderRadius: 8,
-              minHeight: "calc(100vh - 32px)",
-              margin: "0 auto",
+              marginBottom: "20px",
+              marginRight: "20px",
+              width: "35%",
             }}
+          />
+
+          <Pagination
+            current={offsetNum + 1}
+            pageSize={limitOnPage}
+            total={totalAmount}
+            align="center"
+            onChange={(page) => {
+              setOffsetNum(page - 1);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            showSizeChanger={false}
+            style={{
+              marginTop: "20px",
+              marginBottom: "20px",
+              textAlign: "center",
+            }}
+          />
+
+          <Table<User>
+            dataSource={usersList}
+            columns={columns}
+            rowKey={(record) => record.id}
+            pagination={false}
+            bordered
+            onChange={handleTableChange}
+          />
+
+          <Pagination
+            current={offsetNum + 1}
+            pageSize={limitOnPage}
+            total={totalAmount}
+            align="center"
+            onChange={(page) => {
+              setOffsetNum(page - 1);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            showSizeChanger={false}
+            style={{ marginTop: "20px", textAlign: "center" }}
+          />
+
+          {/* Модалка удаления */}
+          <Modal
+            title="Подтверждение удаления пользователя"
+            open={isDeleteUserModalVisible}
+            onOk={handleDeleteUser}
+            onCancel={handleDeleteUserCancel}
+            okText="Да, удалить"
+            cancelText="Отмена"
           >
-            <Input
-              maxLength={65}
-              placeholder="Поиск по имени или email"
-              value={searchInput}
-              onChange={hendleChangeSearchInput}
-              style={{
-                marginBottom: "20px",
-                marginRight: "20px",
-                width: "35%",
-              }}
-            />
-            <Dropdown
-              menu={{
-                items: sortByTypeItems,
-                selectedKeys: [sortByType],
-                onClick: handleSortByTypeMenuClick,
-              }}
-            >
-              <Space style={{ marginRight: "20px" }}>
-                Сортировать по <DownOutlined />
-              </Space>
-            </Dropdown>
-            <Dropdown
-              menu={{
-                items: sortOrderTypeItems,
-                selectedKeys: [sortOrderType],
-                onClick: handleSortOrderTypeMenuClick,
-              }}
-            >
-              <Space style={{ marginRight: "20px" }}>
-                В порядке <DownOutlined />
-              </Space>
-            </Dropdown>
+            <p>Вы действительно хотите удалить пользователя?</p>
+          </Modal>
 
-            <Dropdown
-              menu={{
-                items: sortByBlock,
-                selectedKeys: [String(isBlockedType)],
-                onClick: handleSortByBlock,
-              }}
-            >
-              <Space style={{ marginRight: "20px" }}>
-                Статус блокировки <DownOutlined />
-              </Space>
-            </Dropdown>
+          {/* Модалка блокировки/разблокировки */}
+          <Modal
+            title="Подтверждение блокировки пользователя"
+            open={isBlockUserModalVisible}
+            onOk={handleConfirmBlockUser}
+            onCancel={handleBlockUserModalCancel}
+            okText="Да"
+            cancelText="Отмена"
+          >
+            <p>Вы действительно хотите {blockModalActionText} этого пользователя?</p>
+          </Modal>
 
-            <Pagination
-              current={offsetNum + 1}
-              pageSize={limitOnPage}
-              total={totalAmount}
-              align="center"
-              onChange={(page) => {
-                setOffsetNum(page - 1);
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-              showSizeChanger={false}
-              style={{
-                marginTop: "20px",
-                marginBottom: "20px",
-                textAlign: "center",
-              }}
-            />
-            <Table
-              dataSource={usersList}
-              columns={columns}
-              rowKey={(record) => record.id} // Указываем ключ для строк
-              pagination={false} // Без пагинации
-              bordered // Границы для таблицы
-            />
-            <Pagination
-              current={offsetNum + 1}
-              pageSize={limitOnPage}
-              total={totalAmount}
-              align="center"
-              onChange={(page) => {
-                setOffsetNum(page - 1);
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-              showSizeChanger={false}
-              style={{ marginTop: "20px", textAlign: "center" }}
-            />
-
-            <Modal
-              title="Подтверждение удаления пользователя"
-              open={isDeleteUserModalVisible}
-              onOk={() => handleDeleteUser()}
-              onCancel={handleDeleteUserCancel}
-              okText="Да, удалить"
-              cancelText="Отмена"
-            >
-              <p>Вы действительно хотите удалить пользователя?</p>
-            </Modal>
-
-            <Modal
-              title="Редактирование данных пользователей"
-              open={isChangeUserDataModalVisible}
-              onOk={() => handleChangeUserData()}
-              onCancel={handleChangeUserDataCancel}
-              okText="Редактировать"
-              cancelText="Отмена"
-            >
-              <Form name="basic" layout="vertical">
-                <Form.Item label="Имя">
-                  <Input
-                    value={userNameInput}
-                    onChange={hendleChangeuserNameInput}
-                  />
-                </Form.Item>
-                <Form.Item label="Email">
-                  <Input
-                    value={userMailInput}
-                    onChange={hendleChangeuserMailInput}
-                  />
-                </Form.Item>
-                <Form.Item label="Номер телефона">
-                  <Input
-                    value={userPhoneInput}
-                    onChange={hendleChangeuserPhoneInput}
-                  />
-                </Form.Item>
-              </Form>
-            </Modal>
-          </Content>
-        </Layout>
+          {/* Модалка изменения прав пользователя */}
+          <Modal
+            title="Подтверждение изменения прав пользователя"
+            open={isUpdateUserRightsModalVisible}
+            onOk={handleConfirmUpdateUserRights}
+            onCancel={handleUpdateUserRightsCancel}
+            okText="Да, изменить роль"
+            cancelText="Отмена"
+          >
+            <p>Вы действительно хотите {updateUserRightsActionText}?</p>
+          </Modal>
+        </Content>
       </Layout>
-    </>
+    </Layout>
   );
 };
 

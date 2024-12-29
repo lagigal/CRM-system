@@ -7,6 +7,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ProtectedAuthUserRoute from "./components/ProtectedAuthUserRoute";
 import Users from "./pages/Users";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+import EditUser from "./pages/EditUser";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         </Route>
         <Route element={<ProtectedAdminRoute />}>
           <Route path="/users" element={<Users />} />
+          <Route path="/users/:userId/edit" element={<EditUser />} />
         </Route>
       </Routes>
     </>

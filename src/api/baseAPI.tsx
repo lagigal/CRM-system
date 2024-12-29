@@ -142,6 +142,11 @@ export async function getUsers(
   return response.data;
 }
 
+export async function getUserById(id: number): Promise<User> {
+  const response = await axiosInstance.get(`/admin/users/${id}`);
+  return response.data;
+}
+
 export async function deleteUser(id: number): Promise<void> {
   await axiosInstance.delete(`/admin/users/${id}`);
 }
