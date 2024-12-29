@@ -94,7 +94,7 @@ const Users: React.FC = () => {
 
   // --- Обработчик таблицы (сортировка, фильтры, пагинация) ---
   const handleTableChange: TableProps<User>["onChange"] = (
-    pagination: TablePaginationConfig,
+    _pagination: TablePaginationConfig,
     filters: Record<string, FilterValue | null>,
     sorter: SorterResult<User> | SorterResult<User>[]
   ) => {
