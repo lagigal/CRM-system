@@ -41,48 +41,43 @@ const CustomMenu: React.FC = () => {
 
   const isAdmin = useSelector(selectUser)?.isAdmin;
 
-  const items = isAdmin
-    ? [
-        {
-          label: <Link to="/">Список задач</Link>,
-          key: "/", // Ключ для идентификации текущего маршрута
-          icon: <UnorderedListOutlined />,
-        },
-        {
-          label: <Link to="/profile">Профиль</Link>,
-          key: "/profile",
-          icon: <UserOutlined />,
-        },
-        {
-          label: <Link to="/users">Пользователи</Link>,
-          key: "/users",
-          icon: <UsergroupAddOutlined />,
-        },
-        {
-          onClick: showLogoutModal,
-          label: "Выйти",
-          key: "/login",
-          icon: <LogoutOutlined />,
-        },
-      ]
-    : [
-        {
-          label: <Link to="/">Список задач</Link>,
-          key: "/",
-          icon: <UnorderedListOutlined />,
-        },
-        {
-          label: <Link to="/profile">Профиль</Link>,
-          key: "/profile",
-          icon: <UserOutlined />,
-        },
-        {
-          onClick: showLogoutModal,
-          label: "Выйти",
-          key: "/login",
-          icon: <LogoutOutlined />,
-        },
-      ];
+  const menuItems = [
+    {
+      label: <Link to="/">Список задач</Link>,
+      key: "/", // Ключ для идентификации текущего маршрута
+      icon: <UnorderedListOutlined />,
+      requiresAdmin: false,
+    },
+    {
+      label: <Link to="/profile">Профиль</Link>,
+      key: "/profile",
+      icon: <UserOutlined />,
+      requiresAdmin: false,
+    },
+    {
+      label: <Link to="/users">Пользователи</Link>,
+      key: "/users",
+      icon: <UsergroupAddOutlined />,
+      requiresAdmin: true,
+    },
+    {
+      onClick: showLogoutModal,
+      label: "Выйти",
+      key: "/login",
+      icon: <LogoutOutlined />,
+      requiresAdmin: false,
+    },
+  ]
+
+  const items = menuItems
+  .filter((i) => {
+    if (!i.requiresAdmin || isAdmin) {
+      return true;
+    } else {
+      return false
+    }
+  })
+  .map(({ requiresAdmin, ...rest }) => rest);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>

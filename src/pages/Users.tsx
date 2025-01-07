@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useEffect, useState } from "react";
-import type { ColumnsType, TableProps } from "antd/es/table";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   Tag,
@@ -20,19 +20,18 @@ import {
   ArrowUpOutlined,
   ArrowDownOutlined,
 } from "@ant-design/icons";
+import type { ColumnsType, TableProps, TablePaginationConfig } from "antd/es/table";
+import type { SorterResult, FilterValue } from "antd/es/table/interface";
+import { Content } from "antd/es/layout/layout";
 import {
   blockUser,
   deleteUser,
   getUsers,
   unblockUser,
   updateUserRights,
-} from "../api/baseAPI";
+} from "../api/adminAPI";
 import { User, UserKeys } from "../constants/interfaces";
 import CustomMenu from "../components/CustomMenu";
-import { Content } from "antd/es/layout/layout";
-import type { TablePaginationConfig } from "antd/es/table/interface";
-import type { SorterResult, FilterValue } from "antd/es/table/interface";
-import { useNavigate } from "react-router-dom";
 
 const Users: React.FC = () => {
   const [usersList, setUsersList] = useState<User[]>([]);
@@ -313,36 +312,29 @@ const Users: React.FC = () => {
       filteredValue: isBlockedType !== undefined ? [String(isBlockedType)] : [],
       onFilter: () => true,
       render: (_, record: User) => {
-        const isBlockedTag = record.isBlocked ? (
-          <Tag color="red">Заблок</Tag>
-        ) : (
-          <Tag color="green">Актив</Tag>
+        const isBlocked = record.isBlocked;
+      
+        const statusTag = (
+          <Tag color={isBlocked ? "red" : "green"}>
+            {isBlocked ? "Заблок" : "Актив"}
+          </Tag>
         );
-
-        const blockButton = record.isBlocked ? (
+      
+        const actionButton = (
           <Button
-            icon={<UnlockOutlined />}
+            icon={isBlocked ? <UnlockOutlined /> : <LockOutlined />}
             type="default"
             size="small"
-            onClick={() => showBlockUserModal(record.id, false)}
+            onClick={() => showBlockUserModal(record.id, !isBlocked)}
           >
-            Разблок
-          </Button>
-        ) : (
-          <Button
-            icon={<LockOutlined />}
-            type="default"
-            size="small"
-            onClick={() => showBlockUserModal(record.id, true)}
-          >
-            Заблок
+            {isBlocked ? "Разблок" : "Заблок"}
           </Button>
         );
 
         return (
           <Space>
-            {isBlockedTag}
-            {blockButton}
+            {statusTag}
+            {actionButton}
           </Space>
         );
       },
@@ -351,36 +343,32 @@ const Users: React.FC = () => {
       title: "Роль",
       dataIndex: "isAdmin",
       key: "isAdmin",
-      render: (_, record: User) => (
-        <>
-          {record.isAdmin ? (
-            <Space>
-              <Tag color="orange">Админ</Tag>
-              <Button
-                icon={<ArrowDownOutlined />}
-                danger
-                type="default"
-                size="small"
-                onClick={() => {
-                  showUpdateUserRightsModal(record.id, false);
-                }}
-              />
-            </Space>
-          ) : (
-            <Space>
-              <Tag color="blue">Пользователь</Tag>
-              <Button
-                icon={<ArrowUpOutlined />}
-                type="default"
-                size="small"
-                onClick={() => {
-                  showUpdateUserRightsModal(record.id, true);
-                }}
-              />
-            </Space>
-          )}
-        </>
-      ),
+      render: (_, record: User) => {
+        const isAdmin = record.isAdmin;
+      
+        const statusTag = (
+          <Tag color={isAdmin ? "orange" : "blue"}>
+            {isAdmin ? "Админ" : "Пользователь"}
+          </Tag>
+        );
+      
+        const actionButton = (
+          <Button
+            icon={isAdmin ? <ArrowDownOutlined /> : <ArrowUpOutlined />}
+            danger={isAdmin}
+            type="default"
+            size="small"
+            onClick={() => showUpdateUserRightsModal(record.id, !isAdmin)}
+          />
+        );
+      
+        return (
+          <Space>
+            {statusTag}
+            {actionButton}
+          </Space>
+        );
+      },
     },
     {
       title: "Действия",

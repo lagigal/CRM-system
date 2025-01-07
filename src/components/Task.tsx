@@ -1,7 +1,7 @@
 import "../style/Task.scss";
 import { TaskProps } from "../constants/interfaces";
 import React, { ChangeEvent, useState } from "react";
-import { deleteTasks, updateTask } from "../api/baseAPI";
+import { deleteTasks, updateTask } from "../api/userAPI";
 import { Button, Checkbox, Input } from "antd";
 import {
   CheckOutlined,

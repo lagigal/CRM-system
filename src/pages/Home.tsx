@@ -1,6 +1,6 @@
 import "../style/Home.scss";
 import { useEffect, useState } from "react";
-import { getTasks } from "../api/baseAPI";
+import { getTasks } from "../api/userAPI";
 import { TaskStatus, Todo, TodoInfo } from "../constants/interfaces";
 import CreateTask from "../components/CreateTask";
 import TaskCounter from "../components/TaskCounter";
