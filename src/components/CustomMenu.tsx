@@ -4,10 +4,11 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LogoutOutlined,
   UnorderedListOutlined,
+  UsergroupAddOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { useDispatch } from "../store";
-import { logoutUserThunk } from "../slices/userSlice";
+import { useDispatch, useSelector } from "../store";
+import { logoutUserThunk, selectUser } from "../slices/userSlice";
 
 const { Sider } = Layout;
 
@@ -31,31 +32,52 @@ const CustomMenu: React.FC = () => {
       })
       .catch((error) => {
         console.error("Ошибка логаута:", error);
-      })
+      });
   };
 
   const handleLogoutCancel = () => {
     setIsModalVisible(false);
   };
 
-  const items = [
+  const isAdmin = useSelector(selectUser)?.isAdmin;
+
+  const menuItems = [
     {
       label: <Link to="/">Список задач</Link>,
       key: "/", // Ключ для идентификации текущего маршрута
       icon: <UnorderedListOutlined />,
+      requiresAdmin: false,
     },
     {
       label: <Link to="/profile">Профиль</Link>,
       key: "/profile",
       icon: <UserOutlined />,
+      requiresAdmin: false,
+    },
+    {
+      label: <Link to="/users">Пользователи</Link>,
+      key: "/users",
+      icon: <UsergroupAddOutlined />,
+      requiresAdmin: true,
     },
     {
       onClick: showLogoutModal,
       label: "Выйти",
       key: "/login",
       icon: <LogoutOutlined />,
+      requiresAdmin: false,
     },
-  ];
+  ]
+
+  const items = menuItems
+  .filter((i) => {
+    if (!i.requiresAdmin || isAdmin) {
+      return true;
+    } else {
+      return false
+    }
+  })
+  .map(({ requiresAdmin, ...rest }) => rest);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>

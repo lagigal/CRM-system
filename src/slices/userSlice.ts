@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { userAuth, userLogout, userProfile, userRegistration } from "../api/baseAPI";
+import { userAuth, userLogout, userProfile, userRegistration } from "../api/userAPI";
 import { Profile, UserRegistration } from "../constants/interfaces";
+import { authService } from "../api/baseAPI";
 
 export const registerUserThunk = createAsyncThunk(
   "users/register",
@@ -62,7 +63,7 @@ export const userSlice = createSlice({
       .addCase(loginUserThunk.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isAuthUser = true;
-        localStorage.setItem("accessToken", action.payload.accessToken);
+        authService.setAccessToken(action.payload.accessToken)
         localStorage.setItem("refreshToken", action.payload.refreshToken);
       });
     builder
